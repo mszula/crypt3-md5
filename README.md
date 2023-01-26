@@ -6,7 +6,7 @@ Inspired with `crypt` function in [PHP](https://www.php.net/manual/en/function.c
 ## Installation
 
 ```sh
-npm install @mszula/crypt3-md5
+npm install crypt3-md5
 ```
 
 ## Quick Start 🚀
@@ -14,7 +14,7 @@ npm install @mszula/crypt3-md5
 🧂 Hash password with salt
 
 ```ts
-import { crypt } from '@mszula/crypt3-md5';
+import { crypt } from 'crypt3-md5';
 
 const cryptMd5 = crypt('password', '$1$abcdefgh$');
 ```
@@ -22,7 +22,7 @@ const cryptMd5 = crypt('password', '$1$abcdefgh$');
 Hash password without salt
 
 ```ts
-import { crypt } from '@mszula/crypt3-md5';
+import { crypt } from 'crypt3-md5';
 
 const cryptMd5 = crypt('not salty password');
 ```

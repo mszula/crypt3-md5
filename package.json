@@ -1,5 +1,5 @@
 {
-  "name": "@mszula/crypt3-md5",
+  "name": "crypt3-md5",
   "version": "1.0.0",
   "description": "Implementation of glibc crypt(3) MD5 password hashing method in TypeScript",
   "main": "dist/index.js",
