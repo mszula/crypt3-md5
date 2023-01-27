@@ -1,81 +1,7 @@
-import * as CryptoJS from 'crypto-js';
+import * as crypto from 'crypto';
 
 const SALT_MAXLEN = 8;
 const MD5_MAGIC_STRING = '$1$';
-
-export const crypt = (password: string, salt: string = ''): string => {
-  const parsedPassword = CryptoJS.enc.Utf8.parse(password);
-  const parsedSalt = parseSalt(salt);
-
-  const ctx = CryptoJS.algo.MD5.create();
-
-  ctx.update(parsedPassword);
-  ctx.update(parsedSalt);
-  ctx.update(parsedPassword);
-
-  let fin = ctx.finalize();
-
-  ctx.reset();
-
-  ctx.update(parsedPassword);
-  ctx.update(MD5_MAGIC_STRING);
-  ctx.update(parsedSalt);
-
-  for (let pl = parsedPassword.sigBytes; pl > 0; pl -= 16) {
-    ctx.update(CryptoJS.lib.WordArray.create(fin.words, Math.min(pl, 16)));
-  }
-
-  const empty = CryptoJS.lib.WordArray.create([0], 1);
-  const pwc1 = CryptoJS.lib.WordArray.create(parsedPassword.words, 1);
-  for (let i = parsedPassword.sigBytes; i !== 0; i >>>= 1) {
-    if ((i & 1) !== 0) {
-      ctx.update(empty);
-    } else {
-      ctx.update(pwc1);
-    }
-  }
-
-  fin = ctx.finalize();
-
-  for (let i = 0; i < 1000; ++i) {
-    ctx.reset();
-
-    if ((i & 1) !== 0) {
-      ctx.update(password);
-    } else {
-      ctx.update(fin);
-    }
-
-    if (i % 3 !== 0) {
-      ctx.update(parsedSalt);
-    }
-
-    if (i % 7 !== 0) {
-      ctx.update(password);
-    }
-
-    if ((i & 1) !== 0) {
-      ctx.update(fin);
-    } else {
-      ctx.update(password);
-    }
-
-    fin = ctx.finalize();
-  }
-
-  const finb = wordArrayToByteArray(fin);
-  return (
-    MD5_MAGIC_STRING +
-    parsedSalt +
-    '$' +
-    to64((finb[0] << 16) | (finb[6] << 8) | finb[12], 4) +
-    to64((finb[1] << 16) | (finb[7] << 8) | finb[13], 4) +
-    to64((finb[2] << 16) | (finb[8] << 8) | finb[14], 4) +
-    to64((finb[3] << 16) | (finb[9] << 8) | finb[15], 4) +
-    to64((finb[4] << 16) | (finb[10] << 8) | finb[5], 4) +
-    to64(finb[11], 2)
-  );
-};
 
 const parseSalt = (salt: string) => {
   let saltStart = 0;
@@ -94,15 +20,6 @@ const parseSalt = (salt: string) => {
   return salt.substring(saltStart, saltEnd);
 };
 
-const wordArrayToByteArray = (wa: CryptoJS.lib.WordArray) => {
-  const bytes: Array<number> = [];
-  for (let i = 0; i < wa.sigBytes; ++i) {
-    bytes.push((wa.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
-  }
-
-  return bytes;
-};
-
 const to64 = (value: number, digits: number) => {
   const itoa64 =
     './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -114,4 +31,91 @@ const to64 = (value: number, digits: number) => {
   }
 
   return result;
+};
+
+export const crypt = (password: string, salt: string = '') => {
+  const parsedSalt = parseSalt(salt);
+
+  const mainContext = crypto.createHash('md5');
+  mainContext.update(password + MD5_MAGIC_STRING + parsedSalt);
+
+  const additionalContext = crypto.createHash('md5');
+  additionalContext.update(password + parsedSalt + password);
+
+  const additionalContextBuffer = additionalContext.digest();
+  for (let i = 0; i < password.length; i++) {
+    mainContext.update(
+      String.fromCharCode(additionalContextBuffer[i % 16]),
+      'binary',
+    );
+  }
+
+  for (let i = password.length; i; i >>= 1) {
+    mainContext.update(i & 1 ? '\x00' : password[0]);
+  }
+
+  let mainContextBuffer = mainContext.digest();
+
+  for (let i = 0; i < 1000; i++) {
+    const context = crypto.createHash('md5');
+
+    if (i & 1) {
+      context.update(password);
+    } else {
+      context.update(mainContextBuffer);
+    }
+
+    if (i % 3) {
+      context.update(parsedSalt);
+    }
+
+    if (i % 7) {
+      context.update(password);
+    }
+
+    if (i & 1) {
+      context.update(mainContextBuffer);
+    } else {
+      context.update(password);
+    }
+
+    mainContextBuffer = context.digest();
+  }
+
+  return (
+    MD5_MAGIC_STRING +
+    parsedSalt +
+    '$' +
+    to64(
+      (mainContextBuffer[0] << 16) |
+        (mainContextBuffer[6] << 8) |
+        mainContextBuffer[12],
+      4,
+    ) +
+    to64(
+      (mainContextBuffer[1] << 16) |
+        (mainContextBuffer[7] << 8) |
+        mainContextBuffer[13],
+      4,
+    ) +
+    to64(
+      (mainContextBuffer[2] << 16) |
+        (mainContextBuffer[8] << 8) |
+        mainContextBuffer[14],
+      4,
+    ) +
+    to64(
+      (mainContextBuffer[3] << 16) |
+        (mainContextBuffer[9] << 8) |
+        mainContextBuffer[15],
+      4,
+    ) +
+    to64(
+      (mainContextBuffer[4] << 16) |
+        (mainContextBuffer[10] << 8) |
+        mainContextBuffer[5],
+      4,
+    ) +
+    to64(mainContextBuffer[11], 2)
+  );
 };

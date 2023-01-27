@@ -32,9 +32,6 @@
     "url": "https://github.com/mszula/crypt3-md5/issues"
   },
   "homepage": "https://github.com/mszula/crypt3-md5#readme",
-  "dependencies": {
-    "crypto-js": "^4.1.1"
-  },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
     "@types/jest": "^29.4.0",

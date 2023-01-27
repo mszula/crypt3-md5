@@ -8,6 +8,6 @@ describe('Crypt(3) MD5', () => {
     expect(crypt('P@$$w0rd', '$1$2137JP2$')).toEqual(
       '$1$2137JP2$Gqv0v0q/pK3SEOA4tM4T8.',
     );
-    expect(crypt('Not salty')).toEqual('$1$$tTV.V7Z.p7hmyDcwERh1o1');
+    expect(crypt('not salty password')).toEqual('$1$$IObRb8Uen32kklOUL1C78.');
   });
 });
