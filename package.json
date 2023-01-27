@@ -33,7 +33,6 @@
   },
   "homepage": "https://github.com/mszula/crypt3-md5#readme",
   "devDependencies": {
-    "@types/crypto-js": "^4.1.1",
     "@types/jest": "^29.4.0",
     "@typescript-eslint/eslint-plugin": "^5.49.0",
     "@typescript-eslint/parser": "^5.49.0",
