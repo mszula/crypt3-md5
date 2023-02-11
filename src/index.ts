@@ -1,1 +1,1 @@
-export * from "./crypt3-md5";
+export * from './crypt3-md5';
