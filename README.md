@@ -1,6 +1,6 @@
 # Crypt(3) MD5 hashing algorithm in TypeScript
 
-Simple implementation of [Crypt(3)](https://man7.org/linux/man-pages/man3/crypt.3.html) MD5 hashing method from glib fully written in TypeScript without any dependency.
+Simple implementation of [Crypt(3)](https://man7.org/linux/man-pages/man3/crypt.3.html) MD5 hashing method from glibc fully written in TypeScript without any dependency.
 The function allows to generate `$1$` at the beginning of password hashes, and is fully compatible with `crypt` function in [PHP](https://www.php.net/manual/en/function.crypt.php).
 
 ## Installation
